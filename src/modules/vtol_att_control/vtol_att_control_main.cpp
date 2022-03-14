@@ -99,6 +99,8 @@ VtolAttitudeControl::VtolAttitudeControl() :
 	_params_handles.dec_to_pitch_ff = param_find("VT_B_DEC_FF");
 	_params_handles.dec_to_pitch_i = param_find("VT_B_DEC_I");
 	_params_handles.back_trans_dec_sp = param_find("VT_B_DEC_MSS");
+	_params_handles.vt_bt_flaps_sp = param_find("VT_BT_FLAPS_SP");
+	_params_handles.vt_bt_spoiler_sp = param_find("VT_BT_SPOILER_SP");
 
 	_params_handles.pitch_min_rad = param_find("VT_PTCH_MIN");
 	_params_handles.forward_thrust_scale = param_find("VT_FWD_THRUST_SC");
@@ -371,6 +373,12 @@ VtolAttitudeControl::parameters_update()
 	param_get(_params_handles.vt_forward_thrust_enable_mode, &_params.vt_forward_thrust_enable_mode);
 	param_get(_params_handles.mpc_land_alt1, &_params.mpc_land_alt1);
 	param_get(_params_handles.mpc_land_alt2, &_params.mpc_land_alt2);
+
+	/* flaps and spoiler setpints during backtransition */
+	param_get(_params_handles.vt_bt_flaps_sp, &v);
+	_params.vt_bt_flaps_sp = math::constrain(v, 0.0f, 1.0f);
+	param_get(_params_handles.vt_bt_spoiler_sp, &v);
+	_params.vt_bt_spoiler_sp = math::constrain(v, 0.0f, 1.0f);
 
 	// update the parameters of the instances of base VtolType
 	if (_vtol_type != nullptr) {

@@ -249,6 +249,8 @@ private:
 		param_t mpc_land_alt1;
 		param_t mpc_land_alt2;
 		param_t sys_ctrl_alloc;
+		param_t vt_bt_flaps_sp;
+		param_t vt_bt_spoiler_sp;
 	} _params_handles{};
 
 	hrt_abstime _last_run_timestamp{0};

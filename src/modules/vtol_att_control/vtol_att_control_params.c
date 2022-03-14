@@ -165,6 +165,36 @@ PARAM_DEFINE_FLOAT(VT_B_TRANS_THR, 0.0f);
 PARAM_DEFINE_FLOAT(VT_B_DEC_MSS, 2.0f);
 
 /**
+ * Flaps setpoint during back transition
+ *
+ * Flaps need to be enabled in the mixer/allocator.
+ * Ailerons can be used as flaps as well if set up
+ * that way in the mixer/allocator and separately actuated.
+ *
+ * @min 0
+ * @max 1
+ * @increment 0.01
+ * @decimal 2
+ * @group VTOL Attitude Control
+ */
+PARAM_DEFINE_FLOAT(VT_BT_FLAPS_SP, 0.0f);
+
+/**
+ * Spoiler setpoint during back transition
+ *
+ * Spoilers need to be enabled in the mixer/allocator.
+ * Ailerons can be used as spoilers as well if set up
+ * that way in the mixer/allocator and separately actuated.
+ *
+ * @min 0
+ * @max 1
+ * @increment 0.01
+ * @decimal 2
+ * @group VTOL Attitude Control
+ */
+PARAM_DEFINE_FLOAT(VT_BT_SPOILER_SP, 0.0f);
+
+/**
  * Transition blending airspeed
  *
  * Airspeed at which we can start blending both fw and mc controls. Set to 0 to disable.

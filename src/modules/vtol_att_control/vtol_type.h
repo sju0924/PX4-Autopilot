@@ -81,6 +81,8 @@ struct Params {
 	int32_t vt_forward_thrust_enable_mode;
 	float mpc_land_alt1;
 	float mpc_land_alt2;
+	float vt_bt_flaps_sp;
+	float vt_bt_spoiler_sp;
 };
 
 // Has to match 1:1 msg/vtol_vehicle_status.msg
