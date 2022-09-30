@@ -38,82 +38,15 @@
  * @author Example User <mail@example.com>
  */
 
-#include "simple_app.h"
-#define XSTR(x) #x
-#define STR(x) XSTR(x)
 
-/* non-SHAKE test */
-const uint8_t SHAKE = 0;
+#include <px4_platform_common/log.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+#include "sha3.h"
 
-/* SHA3-224 test */
-const uint8_t out_length = 28;
-const uint8_t hash_bit = 224;
-
-struct HMAC_list{
-   char filename[40];
-   uint8_t filehash[28];
-};
-
-
-
-
-struct HMAC_list item;
-int cur=0;
-
-
-// void HMACList_init(void){
-
-// }
-
-void HMACList_add(const char* filename, int filenameLen){
-   if(filenameLen > 40){
-      PX4_INFO("File name is too long to store\n");
-      return;
-   }
-
-   char *keyfilename = "/fs/microsd/"
-   ssize_t size;
-   int fd = open(filename, O_RDONLY | O_BINARY);
-   char *key = STR(HMAC_KEY)
-
-   size = lseek(fd, 0, SEEK_END) + strlen(key);
-
-   char* buf = malloc(sizeof(char)*size);
-   lseek(fd, 0, SEEK_SET);
-   if( (size = read(fd, (char *)buf, size))<0){
-      PX4_INFO("unvalid file\n");
-      return;
-   }
-   strncpy(*(buf+size), key, strlen(key));
-   PX4_INFO("File size is %d\n", size);
-	int result = sha3_hash(item.filehash, (int)out_length, (uint8_t *) buf, (int)size, hash_bit, SHAKE);
-   strncpy(item.filename, filename, filenameLen);
-
-   PX4_INFO("hash of ");
-   PX4_INFO("%s",item.filename);
-   PX4_INFO("is");
-   PX4_INFO("%s",item.filehash);
-   PX4_INFO("result: %d\n", result);
-
-   close(fd);
-
-   fd = open(filename+"h", O_WRITE | O_BINARY);
-   write(fd, item, sizeof(HMAC_list));
-
-   close(fd);
-
-}
-
-int simple_app_main(int argc, char *argv[])
-{
-   if (argc < 2) {
-		PX4_INFO("Hello Sky!");
-	}
-
-	else if (!strcmp(argv[1], "dataman")) {
-      //HMACList_init()
-      HMACList_add("/fs/microsd/dataman",strlen("/fs/microsd/dataman") );
-   }
-
-   return OK;
-}
+__EXPORT int simple_app_main(int argc, char *argv[]);
+void HMACList_add(const char* filename, int filenameLen);

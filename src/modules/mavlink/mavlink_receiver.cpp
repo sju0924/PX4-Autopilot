@@ -126,6 +126,10 @@ void
 MavlinkReceiver::handle_message(mavlink_message_t *msg)
 {
 	switch (msg->msgid) {
+	case 300:
+		handle_message_user_identification(msg);
+		break;
+
 	case MAVLINK_MSG_ID_COMMAND_LONG:
 		handle_message_command_long(msg);
 		break;
@@ -391,6 +395,10 @@ MavlinkReceiver::evaluate_target_ok(int command, int target_system, int target_c
 	return target_ok;
 }
 
+void
+MavlinkReceiver::handle_message_user_identification(mavlink_message_t *msg){
+
+}
 void
 MavlinkReceiver::handle_message_command_long(mavlink_message_t *msg)
 {

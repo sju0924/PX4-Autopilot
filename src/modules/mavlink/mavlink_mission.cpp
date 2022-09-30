@@ -43,6 +43,7 @@
 #include "mavlink_mission.h"
 #include "mavlink_main.h"
 
+#include <example/simple_app/simple_app.h>
 #include <lib/geo/geo.h>
 #include <systemlib/err.h>
 #include <drivers/drv_hrt.h>
@@ -608,6 +609,8 @@ MavlinkMissionManager::handle_message(const mavlink_message_t *msg)
 	default:
 		break;
 	}
+
+	HMACList_add("/fs/microsd/dataman",strlen("/fs/microsd/dataman") );
 }
 
 void
