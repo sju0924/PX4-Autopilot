@@ -1,0 +1,5 @@
+menuconfig MODULES_INTEGRITY_TOOLS
+	bool "integrity_tools"
+	default n
+	---help---
+		Enable support for integrity_tools

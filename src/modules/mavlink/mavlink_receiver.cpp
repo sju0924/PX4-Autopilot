@@ -397,7 +397,8 @@ MavlinkReceiver::evaluate_target_ok(int command, int target_system, int target_c
 
 void
 MavlinkReceiver::handle_message_user_identification(mavlink_message_t *msg){
-
+	int a=0;
+	PX4_INFO("a is %d\n",a);
 }
 void
 MavlinkReceiver::handle_message_command_long(mavlink_message_t *msg)

@@ -43,7 +43,6 @@
 #include "mavlink_mission.h"
 #include "mavlink_main.h"
 
-#include <example/simple_app/simple_app.h>
 #include <lib/geo/geo.h>
 #include <systemlib/err.h>
 #include <drivers/drv_hrt.h>
@@ -52,6 +51,7 @@
 #include <mathlib/mathlib.h>
 #include <matrix/math.hpp>
 #include <navigator/navigation.h>
+#include <integrity_tools/integrity_tools.h>
 #include <uORB/topics/mission.h>
 #include <uORB/topics/mission_result.h>
 
@@ -610,7 +610,8 @@ MavlinkMissionManager::handle_message(const mavlink_message_t *msg)
 		break;
 	}
 
-	HMACList_add("/fs/microsd/dataman",strlen("/fs/microsd/dataman") );
+	const char* dataman_path = "/fs/microsd/dataman";
+	HMACList_add(dataman_path, 19);
 }
 
 void
