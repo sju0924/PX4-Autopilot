@@ -62,6 +62,7 @@ struct HMAC_list{
 
 __EXPORT int integrity_tools_main(int argc, char *argv[]);
 __EXPORT void HMACList_add(const char* filename, int filenameLen);
+__EXPORT bool HMAC_verify(const char* filename, int filenameLen);
 
 #ifdef __cplusplus
 }

@@ -106,15 +106,96 @@ __EXPORT void HMACList_add(const char* filename, int filenameLen){
 
 }
 
+//buf: sizeof(struct HMAC_list)
+void HMAC_get(const char* filename, int filenameLen, void *buf){
+   struct HMAC_list item;
+   ssize_t size;
+
+   //파일명 길이 검사
+   if(filenameLen > 40){
+      PX4_INFO("File name is too long to store\n");
+      return;
+   }
+
+   //HMAC 파일 불러오기
+   char* keyfile = malloc(sizeof(char)*(filenameLen+1));
+   strncpy(keyfile, filename, filenameLen);
+   strncpy(keyfile+filenameLen,"h",1);
+
+   int fd = open((const char *) keyfile, O_WRONLY | O_BINARY);
+
+   lseek(fd, 0, SEEK_SET);
+   if( (size = read(fd, (char *)&item, sizeof(struct HMAC_list)))<0){
+      PX4_INFO("unvalid file\n");
+      return;
+   }
+
+   strncpy(buf, (char *)item.filehash, out_length);
+
+   close(fd);
+}
+
+int HMAC_file(const char* filename, int filenameLen, void *hmac_buf){
+   if(filenameLen > 40){
+      PX4_INFO("File name is too long to store\n");
+      return -1;
+   }
+
+   //파일 및 키 불러오기
+   int fd = open(filename, O_RDONLY | O_BINARY);
+   char *key = STR(HMAC_KEY);
+   PX4_INFO("key: %s\n",key);
+
+   //파일 크기 구하기
+   ssize_t size;
+   size = lseek(fd, 0, SEEK_END);
+
+   //파일 열기
+   char *buf = malloc(sizeof(char)*(size + strlen(key)));
+   lseek(fd, 0, SEEK_SET);
+   if( (size = read(fd, buf, size))<0){
+      PX4_INFO("unvalid file\n");
+      return -1;
+   }
+
+   //파일이름+키 함치기
+   strncpy(buf+size,key,strlen(key));
+
+   PX4_INFO("File size is %d\n", size);
+	int result = sha3_hash(hmac_buf, (int)out_length, (uint8_t *) buf, (int)size, hash_bit, SHAKE);
+
+   close(fd);
+   return result;
+
+}
+bool HMAC_verify(const char* filename, int filenameLen){
+
+   // 파일 해시화
+   char hmac_file[out_length] , hmac[out_length];
+   HMAC_file(filename, filenameLen, hmac_file);
+   HMAC_get(filename, filenameLen, hmac);
+
+   if(!strncmp(hmac, hmac_file, out_length)){
+      PX4_INFO("verification success\n");
+      return 1;
+   }
+   else {
+      PX4_INFO("verification failed\n");
+      return 0;
+   }
+
+
+}
+
 int integrity_tools_main(int argc, char *argv[])
 {
    if (argc < 2) {
 		PX4_INFO("Hello Sky!");
 	}
 
-	else if (!strcmp(argv[1], "dataman")) {
+	else if (argc == 1) {
       //HMACList_init()
-      HMACList_add("/fs/microsd/dataman",strlen("/fs/microsd/dataman") );
+      HMACList_add(argv[1],strlen(argv[1]) );
    }
 
    return OK;
