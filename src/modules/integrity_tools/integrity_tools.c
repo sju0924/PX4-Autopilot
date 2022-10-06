@@ -44,6 +44,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #include "sha3.h"
 
 #define XSTR(x) #x
@@ -59,7 +60,7 @@
 __EXPORT void HMACList_add(const char* filename, int filenameLen){
 
 
-   struct HMAC_list item;
+   hmac_list item = {"",""};
 
    if(filenameLen > 40){
       PX4_INFO("File name is too long to store\n");
@@ -76,31 +77,29 @@ __EXPORT void HMACList_add(const char* filename, int filenameLen){
    char* buf = malloc(sizeof(char)*(size + strlen(key)));
    lseek(fd, 0, SEEK_SET);
    if( (size = read(fd, (char *)buf, size))<0){
-      PX4_INFO("unvalid file\n");
+      PX4_INFO("unvalid file: %s \n", filename);
       return;
    }
 
    strncpy(buf+size,key,strlen(key));
 
-   PX4_INFO("File size is %d\n", size);
-	int result = sha3_hash(item.filehash, (int)out_length, (uint8_t *) buf, (int)size, hash_bit, SHAKE);
+   PX4_INFO("File size is %ld\n", size);
+	int result = sha3_hash(item.filehash, (int)out_length, (uint8_t *) buf, (int)size, hash_bit, 0);
 
    strncpy(item.filename, filename, filenameLen);
-   PX4_INFO("hash of ");
-   PX4_INFO("%s",item.filename);
-   PX4_INFO("is");
-   PX4_INFO("%s",item.filehash);
-   PX4_INFO("result: %d\n", result);
+   PX4_INFO("hash of %s is %s, result is %d\n",item.filename,item.filehash,result);
 
    close(fd);
 
-   char* keyfile = malloc(sizeof(char)*(filenameLen+1));
+   char* keyfile = malloc(sizeof(char)*(filenameLen+2));
 
    strncpy(keyfile, filename, filenameLen);
-   strncpy(keyfile+filenameLen,"h",1);
-
-   fd = open((const char *) keyfile, O_WRONLY | O_BINARY);
-   write(fd, (void *)&item, sizeof(struct HMAC_list));
+   strncpy(keyfile+filenameLen,"h\0",2);
+   PX4_INFO("hash file stored at %s\n", keyfile);
+   fd = open((const char *) keyfile, O_WRONLY | O_BINARY|O_CREAT,0600);
+   if(write(fd, (void *)&item, sizeof(hmac_list))<0){
+      PX4_INFO("write failed BY %d \n", errno);
+   };
 
    close(fd);
 
@@ -108,7 +107,7 @@ __EXPORT void HMACList_add(const char* filename, int filenameLen){
 
 //buf: sizeof(struct HMAC_list)
 void HMAC_get(const char* filename, int filenameLen, void *buf){
-   struct HMAC_list item;
+   hmac_list item;
    ssize_t size;
 
    //파일명 길이 검사
@@ -125,8 +124,8 @@ void HMAC_get(const char* filename, int filenameLen, void *buf){
    int fd = open((const char *) keyfile, O_WRONLY | O_BINARY);
 
    lseek(fd, 0, SEEK_SET);
-   if( (size = read(fd, (char *)&item, sizeof(struct HMAC_list)))<0){
-      PX4_INFO("unvalid file\n");
+   if( (size = read(fd, (char *)&item, sizeof(hmac_list)))<0){
+      PX4_INFO("unvalid file: %s \n", keyfile);
       return;
    }
 
@@ -154,21 +153,21 @@ int HMAC_file(const char* filename, int filenameLen, void *hmac_buf){
    char *buf = malloc(sizeof(char)*(size + strlen(key)));
    lseek(fd, 0, SEEK_SET);
    if( (size = read(fd, buf, size))<0){
-      PX4_INFO("unvalid file\n");
+      PX4_INFO("unvalid file: %s ", filename);
       return -1;
    }
 
    //파일이름+키 함치기
    strncpy(buf+size,key,strlen(key));
 
-   PX4_INFO("File size is %d\n", size);
-	int result = sha3_hash(hmac_buf, (int)out_length, (uint8_t *) buf, (int)size, hash_bit, SHAKE);
+   PX4_INFO("File size is %ld\n", size);
+	int result = sha3_hash(hmac_buf, (int)out_length, (uint8_t *) buf, (int)size, hash_bit, 0);
 
    close(fd);
    return result;
 
 }
-bool HMAC_verify(const char* filename, int filenameLen){
+__EXPORT bool HMAC_verify(const char* filename, int filenameLen){
 
    // 파일 해시화
    char hmac_file[out_length] , hmac[out_length];
@@ -187,13 +186,22 @@ bool HMAC_verify(const char* filename, int filenameLen){
 
 }
 
+__EXPORT bool user_verify(const char* id, const char* pw){
+   if(!strcmp(id, "sju0924") && !strcmp(pw, "1234")){
+      PX4_INFO("login success, %s", id);
+      return 1;
+   }
+   else{
+      return 0;
+   }
+}
 int integrity_tools_main(int argc, char *argv[])
 {
    if (argc < 2) {
 		PX4_INFO("Hello Sky!");
 	}
 
-	else if (argc == 1) {
+	else if (argc == 2) {
       //HMACList_init()
       HMACList_add(argv[1],strlen(argv[1]) );
    }

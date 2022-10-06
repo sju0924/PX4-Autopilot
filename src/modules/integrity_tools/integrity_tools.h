@@ -42,29 +42,36 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#ifndef INTEGRITY_TOOLS_H
+#define INTEGRITY_TOOLS_H
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
-/* non-SHAKE test */
-const uint8_t SHAKE = 0;
 
 /* SHA3-224 test */
-const uint8_t out_length = 28;
-const uint8_t hash_bit = 224;
+#define out_length 28
+#define hash_bit  224
 
-struct HMAC_list{
+typedef struct HMACList{
    char filename[40];
    uint8_t filehash[28];
-};
+}hmac_list;
 
+typedef struct UserList{
+	char id[20];
+	char password[40];
+}user_list;
+
+const uint8_t MAX_USER = 5;
 
 __EXPORT int integrity_tools_main(int argc, char *argv[]);
 __EXPORT void HMACList_add(const char* filename, int filenameLen);
 __EXPORT bool HMAC_verify(const char* filename, int filenameLen);
-
+__EXPORT bool user_verify(const char* id, const char* pw);
 #ifdef __cplusplus
 }
+#endif
 #endif
 

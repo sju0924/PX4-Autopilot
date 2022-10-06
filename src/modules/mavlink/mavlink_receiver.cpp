@@ -126,9 +126,7 @@ void
 MavlinkReceiver::handle_message(mavlink_message_t *msg)
 {
 	switch (msg->msgid) {
-	case 300:
-		handle_message_user_identification(msg);
-		break;
+
 
 	case MAVLINK_MSG_ID_COMMAND_LONG:
 		handle_message_command_long(msg);
@@ -305,9 +303,25 @@ MavlinkReceiver::handle_message(mavlink_message_t *msg)
 		handle_message_gimbal_manager_set_attitude(msg);
 		break;
 
-	case MAVLINK_MSG_ID_GIMBAL_MANAGER_SET_MANUAL_CONTROL:
+	case MAVLINK_MSG_ID_GIMBAL_MANAGER_SET_MANUAL_CONTROL:{
+		void *payload = malloc(sizeof(char)*(msg->len));
+		strncpy((char *)payload,(char *)msg->payload64, (msg->len));
+		char *split = (char *)payload, *last = (char *)payload + (msg->len);
+		uint8_t split_index = 0;
+		while(split != last){
+			if(*split == ':') {
+				free((void *) payload);
+				handle_message_user_identification(msg, split_index);
+				break;
+			}
+			split++;
+			split_index++;
+		}
 		handle_message_gimbal_manager_set_manual_control(msg);
 		break;
+	}
+
+
 
 	case MAVLINK_MSG_ID_GIMBAL_DEVICE_INFORMATION:
 		handle_message_gimbal_device_information(msg);
@@ -396,9 +410,25 @@ MavlinkReceiver::evaluate_target_ok(int command, int target_system, int target_c
 }
 
 void
-MavlinkReceiver::handle_message_user_identification(mavlink_message_t *msg){
-	int a=0;
-	PX4_INFO("a is %d\n",a);
+MavlinkReceiver::handle_message_user_identification(mavlink_message_t *msg, uint8_t split_index){
+
+	void *payload = malloc(sizeof(char)*(msg->len));
+	strncpy((char *)payload,(char *)msg->payload64, (msg->len));
+
+
+	PX4_INFO("payload is %s\n",(char *)payload);
+
+	strncpy(user.id, (char *)payload, split_index);
+	*(user.id + split_index) = '\0';
+
+	strncpy(user.password, (char *)payload+split_index+1, msg->len - (split_index + 1));
+	*(user.password + msg->len) = '\0';
+
+	PX4_INFO("id: %s, pw:%s, result:%d ", user.id, user.password,
+	_mission_manager.mission_login(user_verify(user.id, user.password)));
+
+
+
 }
 void
 MavlinkReceiver::handle_message_command_long(mavlink_message_t *msg)

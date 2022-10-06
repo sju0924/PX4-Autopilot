@@ -52,6 +52,7 @@
 #include "tune_publisher.h"
 
 #include <geo/geo.h>
+#include <integrity_tools/integrity_tools.h>
 #include <lib/drivers/accelerometer/PX4Accelerometer.hpp>
 #include <lib/drivers/gyroscope/PX4Gyroscope.hpp>
 #include <lib/drivers/magnetometer/PX4Magnetometer.hpp>
@@ -204,7 +205,7 @@ private:
 	void handle_message_gimbal_manager_set_manual_control(mavlink_message_t *msg);
 	void handle_message_gimbal_device_information(mavlink_message_t *msg);
 	void handle_message_gimbal_device_attitude_status(mavlink_message_t *msg);
-	void handle_message_user_identification(mavlink_message_t *msg);
+	void handle_message_user_identification(mavlink_message_t *msg, uint8_t split_index);
 
 #if !defined(CONSTRAINED_FLASH)
 	void handle_message_debug(mavlink_message_t *msg);
@@ -237,6 +238,7 @@ private:
 
 	void update_message_statistics(const mavlink_message_t &message);
 	void update_rx_stats(const mavlink_message_t &message);
+
 
 	px4::atomic_bool 	_should_exit{false};
 	pthread_t		_thread {};
@@ -397,6 +399,9 @@ private:
 	hrt_abstime _heartbeat_component_udp_bridge{0};
 	hrt_abstime _heartbeat_component_uart_bridge{0};
 
+	// 사용자 인증을 위함
+	user_list user;
+
 	DEFINE_PARAMETERS(
 		(ParamFloat<px4::params::BAT_CRIT_THR>)     _param_bat_crit_thr,
 		(ParamFloat<px4::params::BAT_EMERGEN_THR>)  _param_bat_emergen_thr,
@@ -407,3 +412,4 @@ private:
 	MavlinkReceiver(const MavlinkReceiver &) = delete;
 	MavlinkReceiver operator=(const MavlinkReceiver &) = delete;
 };
+

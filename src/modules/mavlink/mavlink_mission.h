@@ -92,6 +92,8 @@ public:
 	void handle_message(const mavlink_message_t *msg);
 
 	void check_active_mission(void);
+	/** set login status **/
+	bool mission_login(bool isLoggedIn);
 
 private:
 	enum MAVLINK_WPM_STATES _state {MAVLINK_WPM_STATE_IDLE};	///< Current state
@@ -138,6 +140,8 @@ private:
 
 	MavlinkRateLimiter	_slow_rate_limiter{100 * 1000};		///< Rate limit sending of the current WP sequence to 10 Hz
 
+	bool logged_in;
+
 	Mavlink *_mavlink;
 
 	static constexpr unsigned int	FILESYSTEM_ERRCOUNT_NOTIFY_LIMIT =
@@ -148,6 +152,8 @@ private:
 		DM_KEY_SAFE_POINTS_MAX - 1
 	};	/**< Maximum number of mission items for each type
 					(fence & safe points use the first item for the stats) */
+
+
 
 	/** get the maximum number of item count for the current _mission_type */
 	uint16_t current_max_item_count();

@@ -3,3 +3,8 @@ menuconfig MODULES_INTEGRITY_TOOLS
 	default n
 	---help---
 		Enable support for integrity_tools
+
+
+	menuconfig HMAC_KEY
+	string "hmac key"
+	depends on MODULES_INTEGRITY_TOOLS

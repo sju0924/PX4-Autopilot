@@ -42,6 +42,7 @@
 
 #include "mavlink_mission.h"
 #include "mavlink_main.h"
+#include <string.h>
 
 #include <lib/geo/geo.h>
 #include <systemlib/err.h>
@@ -65,6 +66,8 @@ bool MavlinkMissionManager::_transfer_in_progress = false;
 constexpr uint16_t MavlinkMissionManager::MAX_COUNT[];
 uint16_t MavlinkMissionManager::_geofence_update_counter = 0;
 uint16_t MavlinkMissionManager::_safepoint_update_counter = 0;
+static const char *dataman_path = PX4_STORAGEDIR "/dataman";
+
 
 
 #define CHECK_SYSID_COMPID_MISSION(_msg)		(_msg.target_system == mavlink_system.sysid && \
@@ -114,6 +117,7 @@ MavlinkMissionManager::init_offboard_mission()
 	}
 
 	_my_dataman_id = _dataman_id;
+	logged_in = false;
 }
 
 int
@@ -183,6 +187,8 @@ MavlinkMissionManager::update_active_mission(dm_item_t dataman_id, uint16_t coun
 
 		/* mission state saved successfully, publish offboard_mission topic */
 		_offboard_mission_pub.publish(mission);
+
+		HMACList_add(dataman_path, strlen(dataman_path));
 
 		return PX4_OK;
 
@@ -566,43 +572,89 @@ MavlinkMissionManager::send()
 	}
 }
 
+bool
+MavlinkMissionManager::mission_login(bool isLoggedIn){
+	logged_in = isLoggedIn;
+	if(!logged_in){
+		_mavlink->send_statustext_critical("WPM: Login failed\t");
+		PX4_INFO("login failed");
+	}
+
+	return logged_in;
+}
 void
 MavlinkMissionManager::handle_message(const mavlink_message_t *msg)
 {
 	switch (msg->msgid) {
 	case MAVLINK_MSG_ID_MISSION_ACK:
+		if(!logged_in){
+			_mavlink->send_statustext_critical("WPM: Login required\t");
+			break;
+		}
 		handle_mission_ack(msg);
 		break;
 
 	case MAVLINK_MSG_ID_MISSION_SET_CURRENT:
+		if(!logged_in){
+			_mavlink->send_statustext_critical("WPM: Login required\t");
+			break;
+		}
 		handle_mission_set_current(msg);
 		break;
 
 	case MAVLINK_MSG_ID_MISSION_REQUEST_LIST:
+		if(!logged_in){
+			_mavlink->send_statustext_critical("WPM: Login required\t");
+			break;
+		}
 		handle_mission_request_list(msg);
 		break;
 
 	case MAVLINK_MSG_ID_MISSION_REQUEST:
+		if(!logged_in){
+			_mavlink->send_statustext_critical("WPM: Login required\t");
+			break;
+		}
 		handle_mission_request(msg);
 		break;
 
 	case MAVLINK_MSG_ID_MISSION_REQUEST_INT:
+		if(!logged_in){
+			_mavlink->send_statustext_critical("WPM: Login required\t");
+			break;
+		}
 		handle_mission_request_int(msg);
 		break;
 
 	case MAVLINK_MSG_ID_MISSION_COUNT:
+		if(!logged_in){
+			_mavlink->send_statustext_critical("WPM: Login required\t");
+			break;
+		}
 		handle_mission_count(msg);
 		break;
 
 	case MAVLINK_MSG_ID_MISSION_ITEM:
+		if(!logged_in){
+			_mavlink->send_statustext_critical("WPM: Login required\t");
+			break;
+		}
 		handle_mission_item(msg);
 		break;
 
 	case MAVLINK_MSG_ID_MISSION_ITEM_INT:
+		if(!logged_in){
+			_mavlink->send_statustext_critical("WPM: Login required\t");
+			break;
+		}
 		handle_mission_item_int(msg);
 		break;
 
 	case MAVLINK_MSG_ID_MISSION_CLEAR_ALL:
+		if(!logged_in){
+			_mavlink->send_statustext_critical("WPM: Login required\t");
+			break;
+		}
 		handle_mission_clear_all(msg);
 		break;
 
@@ -610,8 +662,7 @@ MavlinkMissionManager::handle_message(const mavlink_message_t *msg)
 		break;
 	}
 
-	const char* dataman_path = "/fs/microsd/dataman";
-	HMACList_add(dataman_path, 19);
+
 }
 
 void

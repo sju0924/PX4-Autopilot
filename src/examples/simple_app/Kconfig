@@ -1,5 +1,0 @@
-menuconfig EXAMPLES_SIMPLE_APP
-	bool "simple_app"
-	default n
-	---help---
-		Enable support for simple_app
