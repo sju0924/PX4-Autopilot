@@ -587,10 +587,6 @@ MavlinkMissionManager::handle_message(const mavlink_message_t *msg)
 {
 	switch (msg->msgid) {
 	case MAVLINK_MSG_ID_MISSION_ACK:
-		if(!logged_in){
-			_mavlink->send_statustext_critical("WPM: Login required\t");
-			break;
-		}
 		handle_mission_ack(msg);
 		break;
 
@@ -603,26 +599,14 @@ MavlinkMissionManager::handle_message(const mavlink_message_t *msg)
 		break;
 
 	case MAVLINK_MSG_ID_MISSION_REQUEST_LIST:
-		if(!logged_in){
-			_mavlink->send_statustext_critical("WPM: Login required\t");
-			break;
-		}
 		handle_mission_request_list(msg);
 		break;
 
 	case MAVLINK_MSG_ID_MISSION_REQUEST:
-		if(!logged_in){
-			_mavlink->send_statustext_critical("WPM: Login required\t");
-			break;
-		}
 		handle_mission_request(msg);
 		break;
 
 	case MAVLINK_MSG_ID_MISSION_REQUEST_INT:
-		if(!logged_in){
-			_mavlink->send_statustext_critical("WPM: Login required\t");
-			break;
-		}
 		handle_mission_request_int(msg);
 		break;
 

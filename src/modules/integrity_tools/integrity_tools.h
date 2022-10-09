@@ -41,7 +41,7 @@
 #include <px4_platform_common/log.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-
+#include <stdio.h>
 #ifndef INTEGRITY_TOOLS_H
 #define INTEGRITY_TOOLS_H
 #ifdef __cplusplus
@@ -65,6 +65,7 @@ typedef struct UserList{
 }user_list;
 
 const uint8_t MAX_USER = 5;
+
 
 __EXPORT int integrity_tools_main(int argc, char *argv[]);
 __EXPORT void HMACList_add(const char* filename, int filenameLen);

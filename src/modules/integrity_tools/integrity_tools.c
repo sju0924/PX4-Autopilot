@@ -50,12 +50,15 @@
 #define XSTR(x) #x
 #define STR(x) XSTR(x)
 
-
+const char* ID = "sju0924";
+const char* PW = "1234";
+const char* key = "sju0924:1234";
 
 
 // void HMACList_init(void){
 
 // }
+bool is_logged_in = false;
 
 __EXPORT void HMACList_add(const char* filename, int filenameLen){
 
@@ -69,21 +72,20 @@ __EXPORT void HMACList_add(const char* filename, int filenameLen){
 
    ssize_t size;
    int fd = open(filename, O_RDONLY | O_BINARY);
-   char *key = STR(HMAC_KEY);
-   PX4_INFO("key: %s\n",key);
+   PX4_INFO("key: %s",key);
 
    size = lseek(fd, 0, SEEK_END);
 
    char* buf = malloc(sizeof(char)*(size + strlen(key)));
    lseek(fd, 0, SEEK_SET);
    if( (size = read(fd, (char *)buf, size))<0){
-      PX4_INFO("unvalid file: %s \n", filename);
+      PX4_INFO("unvalid file: %s ", filename);
       return;
    }
 
-   strncpy(buf+size,key,strlen(key));
+   strcpy(buf+size,key);
 
-   PX4_INFO("File size is %ld\n", size);
+   PX4_INFO("File size is %ld", size);
 	int result = sha3_hash(item.filehash, (int)out_length, (uint8_t *) buf, (int)size, hash_bit, 0);
 
    strncpy(item.filename, filename, filenameLen);
@@ -94,11 +96,12 @@ __EXPORT void HMACList_add(const char* filename, int filenameLen){
    char* keyfile = malloc(sizeof(char)*(filenameLen+2));
 
    strncpy(keyfile, filename, filenameLen);
-   strncpy(keyfile+filenameLen,"h\0",2);
-   PX4_INFO("hash file stored at %s\n", keyfile);
+   *(keyfile+filenameLen) = 'h';
+   *(keyfile+filenameLen+1) = '\0';
+   PX4_INFO("hash file stored at %s", keyfile);
    fd = open((const char *) keyfile, O_WRONLY | O_BINARY|O_CREAT,0600);
    if(write(fd, (void *)&item, sizeof(hmac_list))<0){
-      PX4_INFO("write failed BY %d \n", errno);
+      PX4_INFO("write failed BY %d ", errno);
    };
 
    close(fd);
@@ -112,7 +115,7 @@ void HMAC_get(const char* filename, int filenameLen, void *buf){
 
    //파일명 길이 검사
    if(filenameLen > 40){
-      PX4_INFO("File name is too long to store\n");
+      PX4_INFO("File name is too long to store");
       return;
    }
 
@@ -120,12 +123,13 @@ void HMAC_get(const char* filename, int filenameLen, void *buf){
    char* keyfile = malloc(sizeof(char)*(filenameLen+1));
    strncpy(keyfile, filename, filenameLen);
    strncpy(keyfile+filenameLen,"h",1);
+   *(keyfile+filenameLen+1) = '\0';
 
-   int fd = open((const char *) keyfile, O_WRONLY | O_BINARY);
+   int fd = open((const char *) keyfile, O_RDONLY | O_BINARY);
 
    lseek(fd, 0, SEEK_SET);
    if( (size = read(fd, (char *)&item, sizeof(hmac_list)))<0){
-      PX4_INFO("unvalid file: %s \n", keyfile);
+      PX4_INFO("unvalid file: %s ", keyfile);
       return;
    }
 
@@ -136,14 +140,13 @@ void HMAC_get(const char* filename, int filenameLen, void *buf){
 
 int HMAC_file(const char* filename, int filenameLen, void *hmac_buf){
    if(filenameLen > 40){
-      PX4_INFO("File name is too long to store\n");
+      PX4_INFO("File name is too long to store");
       return -1;
    }
 
    //파일 및 키 불러오기
    int fd = open(filename, O_RDONLY | O_BINARY);
-   char *key = STR(HMAC_KEY);
-   PX4_INFO("key: %s\n",key);
+   PX4_INFO("key: %s",key);
 
    //파일 크기 구하기
    ssize_t size;
@@ -158,9 +161,9 @@ int HMAC_file(const char* filename, int filenameLen, void *hmac_buf){
    }
 
    //파일이름+키 함치기
-   strncpy(buf+size,key,strlen(key));
+   strcpy(buf+size,key);
 
-   PX4_INFO("File size is %ld\n", size);
+   PX4_INFO("File size is %ld", size);
 	int result = sha3_hash(hmac_buf, (int)out_length, (uint8_t *) buf, (int)size, hash_bit, 0);
 
    close(fd);
@@ -186,12 +189,15 @@ __EXPORT bool HMAC_verify(const char* filename, int filenameLen){
 
 }
 
-__EXPORT bool user_verify(const char* id, const char* pw){
-   if(!strcmp(id, "sju0924") && !strcmp(pw, "1234")){
-      PX4_INFO("login success, %s", id);
+__EXPORT bool user_verify(const char* _id, const char* _pw){
+   if(!strcmp(_id, ID) && !strcmp(_pw, PW)){
+      PX4_INFO("login success, %s", _id);
+      is_logged_in = true;
       return 1;
    }
    else{
+      PX4_INFO("login failed, %s", _id);
+      is_logged_in = false;
       return 0;
    }
 }
@@ -200,10 +206,16 @@ int integrity_tools_main(int argc, char *argv[])
    if (argc < 2) {
 		PX4_INFO("Hello Sky!");
 	}
-
-	else if (argc == 2) {
+   else if(!strcmp(argv[1], "login")){
+      if(is_logged_in) printf("true\n");
+      else printf("false\n");
+   }
+	else if (argc == 3 && !strcmp(argv[1], "hmac")) {
       //HMACList_init()
-      HMACList_add(argv[1],strlen(argv[1]) );
+      HMACList_add(argv[2],strlen(argv[2]) );
+   }
+   else if(argc == 3 && !strcmp(argv[1], "verify")){
+      HMAC_verify(argv[2], strlen(argv[2]));
    }
 
    return OK;
