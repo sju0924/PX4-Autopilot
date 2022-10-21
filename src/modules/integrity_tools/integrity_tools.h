@@ -37,6 +37,7 @@
  *
  * @author Example User <mail@example.com>
  */
+#pragma once
 
 #include <px4_platform_common/log.h>
 #include <sys/types.h>
@@ -65,12 +66,42 @@ typedef struct UserList{
 }user_list;
 
 const uint8_t MAX_USER = 5;
-
-
 __EXPORT int integrity_tools_main(int argc, char *argv[]);
+
+/*
+	@input: filename: name of target file to make hmac
+		filenameLen: length of filename
+
+	@output:{filename}h file
+	@description: make hmac file of certain file
+*/
 __EXPORT void HMACList_add(const char* filename, int filenameLen);
+
+/*
+	@input: filename: name of target file to make hmac
+		filenameLen: length of filename
+
+	@output: bool: if hmac of file and {filename}h is identical
+	@description: verify hmac for certain file
+*/
 __EXPORT bool HMAC_verify(const char* filename, int filenameLen);
+
+/*
+	@input: id: id of user
+		pw: password of user
+
+	@output: bool: if login is successful
+	@description: login for uav
+*/
 __EXPORT bool user_verify(const char* id, const char* pw);
+
+/*
+	@output: bool: if uav has logged-in
+*/
+__EXPORT bool user_login_state(void);
+
+
+
 #ifdef __cplusplus
 }
 #endif

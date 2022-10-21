@@ -50,14 +50,12 @@
 #define XSTR(x) #x
 #define STR(x) XSTR(x)
 
-const char* ID = "sju0924";
-const char* PW = "1234";
-const char* key = "sju0924:1234";
+
+#define ID "sju0924"
+#define PW "1234"
+#define key ID":"PW
 
 
-// void HMACList_init(void){
-
-// }
 bool is_logged_in = false;
 
 __EXPORT void HMACList_add(const char* filename, int filenameLen){
@@ -85,7 +83,7 @@ __EXPORT void HMACList_add(const char* filename, int filenameLen){
 
    strcpy(buf+size,key);
 
-   PX4_INFO("File size is %ld", size);
+   //PX4_INFO("File size is %ld", size);
 	int result = sha3_hash(item.filehash, (int)out_length, (uint8_t *) buf, (int)size, hash_bit, 0);
 
    strncpy(item.filename, filename, filenameLen);
@@ -163,7 +161,7 @@ int HMAC_file(const char* filename, int filenameLen, void *hmac_buf){
    //파일이름+키 함치기
    strcpy(buf+size,key);
 
-   PX4_INFO("File size is %ld", size);
+   //PX4_INFO("File size is %ld", size);
 	int result = sha3_hash(hmac_buf, (int)out_length, (uint8_t *) buf, (int)size, hash_bit, 0);
 
    close(fd);
@@ -201,12 +199,16 @@ __EXPORT bool user_verify(const char* _id, const char* _pw){
       return 0;
    }
 }
+
+__EXPORT bool user_login_state(void){
+   return is_logged_in;
+}
 int integrity_tools_main(int argc, char *argv[])
 {
    if (argc < 2) {
 		PX4_INFO("Hello Sky!");
 	}
-   else if(!strcmp(argv[1], "login")){
+   else if(!strcmp(argv[1], "login") && argc == 2){
       if(is_logged_in) printf("true\n");
       else printf("false\n");
    }
@@ -216,6 +218,9 @@ int integrity_tools_main(int argc, char *argv[])
    }
    else if(argc == 3 && !strcmp(argv[1], "verify")){
       HMAC_verify(argv[2], strlen(argv[2]));
+   }
+   else if(argc == 4 && !strcmp(argv[1],"login")){
+      user_verify(argv[2],argv[3]);
    }
 
    return OK;

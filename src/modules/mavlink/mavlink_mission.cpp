@@ -188,7 +188,6 @@ MavlinkMissionManager::update_active_mission(dm_item_t dataman_id, uint16_t coun
 		/* mission state saved successfully, publish offboard_mission topic */
 		_offboard_mission_pub.publish(mission);
 
-		HMACList_add(dataman_path, strlen(dataman_path));
 
 		return PX4_OK;
 
@@ -591,11 +590,12 @@ MavlinkMissionManager::handle_message(const mavlink_message_t *msg)
 		break;
 
 	case MAVLINK_MSG_ID_MISSION_SET_CURRENT:
-		if(!logged_in){
+		if(!user_login_state()){
 			_mavlink->send_statustext_critical("WPM: Login required\t");
 			break;
 		}
 		handle_mission_set_current(msg);
+		HMACList_add(dataman_path, strlen(dataman_path));
 		break;
 
 	case MAVLINK_MSG_ID_MISSION_REQUEST_LIST:
@@ -611,35 +611,43 @@ MavlinkMissionManager::handle_message(const mavlink_message_t *msg)
 		break;
 
 	case MAVLINK_MSG_ID_MISSION_COUNT:
-		if(!logged_in){
+		if(!user_login_state()){
 			_mavlink->send_statustext_critical("WPM: Login required\t");
 			break;
 		}
 		handle_mission_count(msg);
+		HMACList_add(dataman_path, strlen(dataman_path));
+
 		break;
 
 	case MAVLINK_MSG_ID_MISSION_ITEM:
-		if(!logged_in){
+		if(!user_login_state()){
 			_mavlink->send_statustext_critical("WPM: Login required\t");
 			break;
 		}
 		handle_mission_item(msg);
+		HMACList_add(dataman_path, strlen(dataman_path));
+
 		break;
 
 	case MAVLINK_MSG_ID_MISSION_ITEM_INT:
-		if(!logged_in){
+		if(!user_login_state()){
 			_mavlink->send_statustext_critical("WPM: Login required\t");
 			break;
 		}
 		handle_mission_item_int(msg);
+		HMACList_add(dataman_path, strlen(dataman_path));
+
 		break;
 
 	case MAVLINK_MSG_ID_MISSION_CLEAR_ALL:
-		if(!logged_in){
+		if(!user_login_state()){
 			_mavlink->send_statustext_critical("WPM: Login required\t");
 			break;
 		}
 		handle_mission_clear_all(msg);
+		HMACList_add(dataman_path, strlen(dataman_path));
+
 		break;
 
 	default:

@@ -304,8 +304,10 @@ MavlinkReceiver::handle_message(mavlink_message_t *msg)
 		break;
 
 	case MAVLINK_MSG_ID_GIMBAL_MANAGER_SET_MANUAL_CONTROL:{
-		void *payload = malloc(sizeof(char)*(msg->len));
+		void *payload = malloc(sizeof(char)*(msg->len + 1));
 		strncpy((char *)payload,(char *)msg->payload64, (msg->len));
+		*((char *)payload + (msg->len)) = '\0';
+		PX4_INFO("get login info: %s", (char *)payload);
 		char *split = (char *)payload, *last = (char *)payload + (msg->len);
 		uint8_t split_index = 0;
 		while(split != last){
