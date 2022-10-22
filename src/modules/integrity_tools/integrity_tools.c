@@ -84,7 +84,7 @@ __EXPORT void HMACList_add(const char* filename, int filenameLen){
    strcpy(buf+size,key);
 
    //PX4_INFO("File size is %ld", size);
-	int result = sha3_hash(item.filehash, (int)out_length, (uint8_t *) buf, (int)size, hash_bit, 0);
+	int result = sha3_hash(item.filehash, (int)out_length, (uint8_t *) buf, (int)(size + strlen(key)), hash_bit, 0);
 
    strncpy(item.filename, filename, filenameLen);
    PX4_INFO("hash of %s is %s, result is %d\n",item.filename,item.filehash,result);
@@ -162,7 +162,7 @@ int HMAC_file(const char* filename, int filenameLen, void *hmac_buf){
    strcpy(buf+size,key);
 
    //PX4_INFO("File size is %ld", size);
-	int result = sha3_hash(hmac_buf, (int)out_length, (uint8_t *) buf, (int)size, hash_bit, 0);
+	int result = sha3_hash(hmac_buf, (int)out_length, (uint8_t *) buf, (int)(size + strlen(key)), hash_bit, 0);
 
    close(fd);
    return result;
