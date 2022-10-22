@@ -382,7 +382,6 @@ MavlinkMissionManager::send_mission_item(uint8_t sysid, uint8_t compid, uint16_t
 			wp.current = (_current_seq == seq) ? 1 : 0;
 
 			mavlink_msg_mission_item_send_struct(_mavlink->get_channel(), &wp);
-
 			PX4_DEBUG("WPM: Send MISSION_ITEM seq %u to ID %u", wp.seq, wp.target_system);
 		}
 
@@ -613,6 +612,7 @@ MavlinkMissionManager::handle_message(const mavlink_message_t *msg)
 	case MAVLINK_MSG_ID_MISSION_COUNT:
 		if(!user_login_state()){
 			_mavlink->send_statustext_critical("WPM: Login required\t");
+			send_mission_ack(_transfer_partner_sysid, _transfer_partner_compid, MAV_MISSION_ERROR);
 			break;
 		}
 		handle_mission_count(msg);
@@ -623,6 +623,7 @@ MavlinkMissionManager::handle_message(const mavlink_message_t *msg)
 	case MAVLINK_MSG_ID_MISSION_ITEM:
 		if(!user_login_state()){
 			_mavlink->send_statustext_critical("WPM: Login required\t");
+			send_mission_ack(_transfer_partner_sysid, _transfer_partner_compid, MAV_MISSION_ERROR);
 			break;
 		}
 		handle_mission_item(msg);
@@ -633,6 +634,7 @@ MavlinkMissionManager::handle_message(const mavlink_message_t *msg)
 	case MAVLINK_MSG_ID_MISSION_ITEM_INT:
 		if(!user_login_state()){
 			_mavlink->send_statustext_critical("WPM: Login required\t");
+			send_mission_ack(_transfer_partner_sysid, _transfer_partner_compid, MAV_MISSION_ERROR);
 			break;
 		}
 		handle_mission_item_int(msg);
@@ -643,6 +645,7 @@ MavlinkMissionManager::handle_message(const mavlink_message_t *msg)
 	case MAVLINK_MSG_ID_MISSION_CLEAR_ALL:
 		if(!user_login_state()){
 			_mavlink->send_statustext_critical("WPM: Login required\t");
+			send_mission_ack(_transfer_partner_sysid, _transfer_partner_compid, MAV_MISSION_ERROR);
 			break;
 		}
 		handle_mission_clear_all(msg);

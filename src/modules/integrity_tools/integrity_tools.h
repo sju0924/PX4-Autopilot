@@ -95,7 +95,7 @@ __EXPORT bool HMAC_verify(const char* filename, int filenameLen);
 */
 __EXPORT bool user_verify(const char* id, const char* pw);
 
-/*
+/*S
 	@output: bool: if uav has logged-in
 */
 __EXPORT bool user_login_state(void);
